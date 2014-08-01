@@ -1,0 +1,12 @@
+
+_togu_media_bundle_gallery_rest:
+    type: rest
+    resource: Togu\MediaBundle\Controller\GalleryController
+    name_prefix: _togu_media_rest_
+
+
+_togu_media_bundle_media_rest:
+    type: rest
+    resource: Togu\MediaBundle\Controller\MediaController
+    name_prefix: _togu_media_rest_
+    

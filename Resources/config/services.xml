@@ -1,0 +1,41 @@
+<?xml version="1.0" ?>
+
+<container xmlns="http://symfony.com/schema/dic/services"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
+
+    <parameters>
+        <parameter key="togu.media.image.eventlistener.class">Togu\MediaBundle\EventListener\ImageReferenceSubscriber</parameter>
+        <parameter key="togu.media.handler.image.class">Togu\MediaBundle\Handler\ImageTypeHandler</parameter>
+        <parameter key="togu.media.handler.rawimage.class">Togu\MediaBundle\Handler\RawImageTypeHandler</parameter>
+    </parameters>
+
+    <services>
+        <service id="togu.media.handler.image" class="%togu.media.handler.image.class%">
+        	<argument type="service" id="sonata.media.manager.media" />
+        	<tag name="jms_serializer.subscribing_handler" />
+        </service>
+    
+        <service id="togu.media.handler.rawimage" class="%togu.media.handler.rawimage.class%">
+        	<argument type="service" id="sonata.media.pool" />
+        	<tag name="jms_serializer.subscribing_handler" />
+        </service>
+    
+        <service id="togu.media.image.eventlistener" class="%togu.media.image.eventlistener.class%">
+            <argument type="service" id="sonata.media.manager.media" />
+            <argument type="service" id="togu.annotation.processor" />
+			<tag name="doctrine_phpcr.event_subscriber" />
+        </service>
+        
+
+        <service id="togu.media.initializer" class="Doctrine\Bundle\PHPCRBundle\Initializer\GenericInitializer">
+            <argument>ToguMediaBundle</argument>
+            <argument type="collection">
+                <argument>/media</argument>
+            </argument>
+            <tag name="doctrine_phpcr.initializer"/>
+        </service>
+        
+        
+    </services>
+</container>

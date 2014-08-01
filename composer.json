@@ -1,0 +1,13 @@
+{
+    "name": "togu/media-bundle",
+    "description": "Togu Media Bundle",
+    "require": {
+    },
+    "license": "GPL v3",
+    "authors": [
+        {
+            "name": "Alessandro Siragusa",
+            "email": "alessandro.siragusa@gmail.com"
+        }
+    ]
+}
