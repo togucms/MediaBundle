@@ -26,6 +26,7 @@ use Doctrine\Common\Persistence\ObjectManager;
 use Symfony\Component\DependencyInjection\ContainerAware;
 use Doctrine\Common\DataFixtures\OrderedFixtureInterface;
 use Symfony\Component\Config\FileLocator;
+use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Yaml\Yaml;
 
 use Togu\MediaBundle\Document\RootNode;
@@ -59,6 +60,9 @@ class LoadGallery extends ContainerAware implements FixtureInterface, OrderedFix
         $this->locator = new FileLocator($configDir . '/fixtures/media');
 
         $fixtures = Yaml::parse(file_get_contents($this->locator->locate("media.yaml")));
+        $filesystem = new Filesystem();
+        $local = $this->container->get('sonata.media.adapter.filesystem.local');
+        $filesystem->mkdir($local->getDirectory());
 
         foreach ($fixtures as $node) {
             $this->processNode($gallery, $node, $manager);
