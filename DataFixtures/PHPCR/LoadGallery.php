@@ -42,7 +42,6 @@ class LoadGallery extends ContainerAware implements FixtureInterface, OrderedFix
      */
     public function load(ObjectManager $manager)
     {
-
         $parentDocument = $manager->find(null, '/media');
 
         $gallery = new RootNode();
@@ -68,20 +67,21 @@ class LoadGallery extends ContainerAware implements FixtureInterface, OrderedFix
         $manager->flush();
     }
 
-    protected function processNode($parent, $node) {
+    protected function processNode($parent, $node)
+    {
         $gallery = new Gallery();
         $gallery->setLeaf($node['leaf']);
         $gallery->setText($node['text']);
         $gallery->setParentId($parent);
 
-        if($node['leaf'] === true) {
+        if ($node['leaf'] === true) {
             $gallery->setImageId($this->addMedia($node['media']));
             $this->manager->persist($gallery);
             return;
         }
            $this->manager->persist($gallery);
 
-        if(! isset($node['children'])) {
+        if (! isset($node['children'])) {
             return;
         }
         foreach ($node['children'] as $childNode) {
@@ -89,7 +89,8 @@ class LoadGallery extends ContainerAware implements FixtureInterface, OrderedFix
         }
     }
 
-    protected function addMedia($mediaInfo) {
+    protected function addMedia($mediaInfo)
+    {
         $media = $this->mediaManager->create();
         $media->setBinaryContent($this->locator->locate($mediaInfo['fileName']));
         $media->setEnabled(true);
