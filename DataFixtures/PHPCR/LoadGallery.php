@@ -26,6 +26,7 @@ use Doctrine\Common\Persistence\ObjectManager;
 use Symfony\Component\DependencyInjection\ContainerAware;
 use Doctrine\Common\DataFixtures\OrderedFixtureInterface;
 use Symfony\Component\Config\FileLocator;
+use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Yaml\Yaml;
 
 use Togu\MediaBundle\Document\RootNode;
@@ -33,23 +34,22 @@ use Togu\MediaBundle\Document\Gallery;
 
 class LoadGallery extends ContainerAware implements FixtureInterface, OrderedFixtureInterface
 {
-	protected $manager;
-	protected $locator;
-	protected $mediaManager;
+    protected $manager;
+    protected $locator;
+    protected $mediaManager;
 
     /**
      * {@inheritDoc}
      */
     public function load(ObjectManager $manager)
     {
-
-    	$parentDocument = $manager->find(null, '/media');
+        $parentDocument = $manager->find(null, '/media');
 
         $gallery = new RootNode();
-    	$gallery->setParentId($parentDocument);
-    	$gallery->setLeaf(false);
-    	$gallery->setId('root');
-    	$gallery->setText('Images');
+        $gallery->setParentId($parentDocument);
+        $gallery->setLeaf(false);
+        $gallery->setId('root');
+        $gallery->setText('Images');
 
         $manager->persist($gallery);
 
@@ -60,46 +60,51 @@ class LoadGallery extends ContainerAware implements FixtureInterface, OrderedFix
         $this->locator = new FileLocator($configDir . '/fixtures/media');
 
         $fixtures = Yaml::parse(file_get_contents($this->locator->locate("media.yaml")));
+        $filesystem = new Filesystem();
+        $local = $this->container->get('sonata.media.adapter.filesystem.local');
+        $filesystem->mkdir($local->getDirectory());
 
         foreach ($fixtures as $node) {
-        	$this->processNode($gallery, $node, $manager);
+            $this->processNode($gallery, $node, $manager);
         }
 
         $manager->flush();
     }
 
-    protected function processNode($parent, $node) {
-    	$gallery = new Gallery();
-    	$gallery->setLeaf($node['leaf']);
-    	$gallery->setText($node['text']);
-    	$gallery->setParentId($parent);
+    protected function processNode($parent, $node)
+    {
+        $gallery = new Gallery();
+        $gallery->setLeaf($node['leaf']);
+        $gallery->setText($node['text']);
+        $gallery->setParentId($parent);
 
-    	if($node['leaf'] === true) {
-    		$gallery->setImageId($this->addMedia($node['media']));
-	    	$this->manager->persist($gallery);
-    		return;
-    	}
-	   	$this->manager->persist($gallery);
+        if ($node['leaf'] === true) {
+            $gallery->setImageId($this->addMedia($node['media']));
+            $this->manager->persist($gallery);
+            return;
+        }
+           $this->manager->persist($gallery);
 
-    	if(! isset($node['children'])) {
-    		return;
-    	}
-    	foreach ($node['children'] as $childNode) {
-    		$this->processNode($gallery, $childNode);
-    	}
+        if (! isset($node['children'])) {
+            return;
+        }
+        foreach ($node['children'] as $childNode) {
+            $this->processNode($gallery, $childNode);
+        }
     }
 
-    protected function addMedia($mediaInfo) {
-    	$media = $this->mediaManager->create();
-    	$media->setBinaryContent($this->locator->locate($mediaInfo['fileName']));
-    	$media->setEnabled(true);
+    protected function addMedia($mediaInfo)
+    {
+        $media = $this->mediaManager->create();
+        $media->setBinaryContent($this->locator->locate($mediaInfo['fileName']));
+        $media->setEnabled(true);
 
-    	$context = $mediaInfo['context'];
-    	$provider = $mediaInfo['provider'];
+        $context = $mediaInfo['context'];
+        $provider = $mediaInfo['provider'];
 
-    	$this->mediaManager->save($media, $context, $provider);
+        $this->mediaManager->save($media, $context, $provider);
 
-    	return $media;
+        return $media;
     }
 
     /**
@@ -107,6 +112,6 @@ class LoadGallery extends ContainerAware implements FixtureInterface, OrderedFix
      */
     public function getOrder()
     {
-    	return 1;
+        return 1;
     }
 }
